@@ -1,10 +1,26 @@
+/**
+ * 1、启动zookeeper
+ * bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+ *
+ * https://www.cnblogs.com/wyl9527/p/6395405.html
+ *
+ * 2、storm
+ * nohup ./storm nimbus &
+ * nohup ./storm ui &
+ * nohup ./storm supervisor &
+ *
+ * storm jar /opt/apache-storm/test/storm-demo-1.0-SNAPSHOT.jar com.xxx.storm.demo.WordCountTopology wordcount-topology
+ */
+
+
 package com.xxx.storm.demo;
 
-import backtype.storm.Config;
-import backtype.storm.LocalCluster;
-import backtype.storm.topology.TopologyBuilder;
-import backtype.storm.tuple.Fields;
-import backtype.storm.utils.Utils;
+import org.apache.storm.Config;
+import org.apache.storm.LocalCluster;
+import org.apache.storm.StormSubmitter;
+import org.apache.storm.topology.TopologyBuilder;
+import org.apache.storm.tuple.Fields;
+import org.apache.storm.utils.Utils;
 
 /**
  * wordCount spout
@@ -33,11 +49,15 @@ public class WordCountTopology {
 
         Config config = new Config();
 
-        LocalCluster cluster = new LocalCluster();
-        cluster.submitTopology(TOPOLOGY_NAME, config, builder.createTopology());
+        if (args.length == 0) {
+            LocalCluster cluster = new LocalCluster();
+            cluster.submitTopology(TOPOLOGY_NAME, config, builder.createTopology());
 
-        Utils.sleep(10);
-        cluster.killTopology(TOPOLOGY_NAME);
-        cluster.shutdown();
+            Utils.sleep(10 * 1000);
+            cluster.killTopology(TOPOLOGY_NAME);
+            cluster.shutdown();
+        }else{
+            StormSubmitter.submitTopology(args[0], config, builder.createTopology());
+        }
     }
 }
